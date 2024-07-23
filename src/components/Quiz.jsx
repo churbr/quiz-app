@@ -5,10 +5,12 @@ import QuestionTimer from './QuestionTimer';
 
 export default function Quiz() {
   // const [questionIndex, setQuestionIndex] = useState(0);
+  const [answerState, setAnswerState] = useState('');
   const [userAnswer, setUserAnswer] = useState([]);
 
   // Derived value, instead of using another state
-  const activeQuestionIndex = userAnswer.length;
+  const activeQuestionIndex =
+    answerState === '' ? userAnswer.length : userAnswer.length - 1;
 
   const quizCompleted = activeQuestionIndex === QUESTIONS.length;
 
@@ -17,18 +19,26 @@ export default function Quiz() {
    */
   const handleUserAnswer = useCallback(
     function handleUserAnswer(answer) {
+      setAnswerState('answered');
+
       setUserAnswer((prevUserAnswers) => {
         return [...prevUserAnswers, answer];
       });
+
+      setTimeout(() => {
+        if (answer === QUESTIONS[activeQuestionIndex].answers[0]) {
+          setAnswerState('correct');
+        } else {
+          setAnswerState('wrong');
+        }
+
+        // This setTimeout will only start when the parent timer setTimeout expires
+        setTimeout(() => {
+          setAnswerState('');
+        }, 2000);
+      }, 1000);
     },
-    []
-    /**
-     * 3) But here, we don't add anything to dependency array because we're not using any state or props
-     *    And also, no any other values that depend on state/props.
-     *
-     *    The state updating function `setUserAnswer`, don't need to be added in the dependency
-     *    Because React guarantee that they never change
-     */
+    [activeQuestionIndex]
   );
 
   /**
@@ -92,11 +102,32 @@ export default function Quiz() {
 
         <h2>{QUESTIONS[activeQuestionIndex].text}</h2>
         <ul id="answers">
-          {shuffledAnswers.map((answer) => (
-            <li className="answer" key={answer}>
-              <button onClick={() => handleUserAnswer(answer)}>{answer}</button>
-            </li>
-          ))}
+          {shuffledAnswers.map((answer) => {
+            let cssClasses = '';
+            const isSelected = userAnswer[userAnswer.length - 1] === answer;
+
+            if (answerState === 'answered' && isSelected) {
+              cssClasses = 'selected';
+            }
+
+            if (
+              (answerState === 'correct' || answerState === 'wrong') &&
+              isSelected
+            ) {
+              cssClasses = answerState;
+            }
+
+            return (
+              <li className="answer" key={answer}>
+                <button
+                  className={cssClasses}
+                  onClick={() => handleUserAnswer(answer)}
+                >
+                  {answer}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>
