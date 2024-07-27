@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import QUESTIONS from '../questions';
 import quizCompletedImg from '../assets/quiz-complete.png';
-import QuestionTimer from './QuestionTimer';
+import Question from './Question';
 
 export default function Quiz() {
   // const [questionIndex, setQuestionIndex] = useState(0);
@@ -67,69 +67,17 @@ export default function Quiz() {
     );
   }
 
-  // We need to create a new array because we don't want to change the original array
-  // Because in the original array contains the correct value, which is always the first index
-  const shuffledAnswers = [...QUESTIONS[activeQuestionIndex].answers];
-
-  // To shuffle, negative number
-  // To retain its original order any positive number
-  shuffledAnswers.sort(() => Math.random - 0.5);
-
   return (
     <div id="quiz">
-      {/**
-       * A `key` in React also has another usage and not only for lists.
-       * A key can also be used in Components. If a key is assigned to a component and its value changed,
-       * the component will then be unmounted and remounted in the DOM or in other words, re-render.
-       *
-       * And that's the reason why we use it in <QuestionTimer /> component, because this component
-       * has values that doesn't change. The `handleSkipAnswer` doesn't change because we use useCallback() hook in it
-       * and timeout props which is set to 1000, will also not change.
-       *
-       * So, in order for the loading screen/progress bar to reset everytime we move to the next question, we assign a key,
-       * with a value that changes when the question changes.
-       */}
-      <div id="question">
-        <QuestionTimer
-          key={activeQuestionIndex}
-          timeout={10000}
-          onTimeout={handleSkipAnswer}
-        />
-        {/**
-         * We use key attribute and assigned a unique value to it. So that it resets the component.
-         *
-         **/}
-
-        <h2>{QUESTIONS[activeQuestionIndex].text}</h2>
-        <ul id="answers">
-          {shuffledAnswers.map((answer) => {
-            let cssClasses = '';
-            const isSelected = userAnswer[userAnswer.length - 1] === answer;
-
-            if (answerState === 'answered' && isSelected) {
-              cssClasses = 'selected';
-            }
-
-            if (
-              (answerState === 'correct' || answerState === 'wrong') &&
-              isSelected
-            ) {
-              cssClasses = answerState;
-            }
-
-            return (
-              <li className="answer" key={answer}>
-                <button
-                  className={cssClasses}
-                  onClick={() => handleUserAnswer(answer)}
-                >
-                  {answer}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+      <Question
+        key={activeQuestionIndex}
+        questionText={QUESTIONS[activeQuestionIndex].text}
+        answers={QUESTIONS[activeQuestionIndex].answers}
+        selectedAnswer={userAnswer[userAnswer.length - 1]}
+        onSelectAnswer={handleUserAnswer}
+        onSkipAnswer={handleSkipAnswer}
+        answerState={answerState}
+      />
     </div>
   );
 }
