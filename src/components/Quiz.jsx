@@ -4,42 +4,21 @@ import quizCompletedImg from '../assets/quiz-complete.png';
 import Question from './Question';
 
 export default function Quiz() {
-  // const [questionIndex, setQuestionIndex] = useState(0);
-  const [answerState, setAnswerState] = useState('');
   const [userAnswer, setUserAnswer] = useState([]);
 
   // Derived value, instead of using another state
-  const activeQuestionIndex =
-    answerState === '' ? userAnswer.length : userAnswer.length - 1;
+  const activeQuestionIndex = userAnswer.length;
 
   const quizCompleted = activeQuestionIndex === QUESTIONS.length;
 
   /**
    * 2) Therefore, we should also use useCallback here.
    */
-  const handleUserAnswer = useCallback(
-    function handleUserAnswer(answer) {
-      setAnswerState('answered');
-
-      setUserAnswer((prevUserAnswers) => {
-        return [...prevUserAnswers, answer];
-      });
-
-      setTimeout(() => {
-        if (answer === QUESTIONS[activeQuestionIndex].answers[0]) {
-          setAnswerState('correct');
-        } else {
-          setAnswerState('wrong');
-        }
-
-        // This setTimeout will only start when the parent timer setTimeout expires
-        setTimeout(() => {
-          setAnswerState('');
-        }, 2000);
-      }, 1000);
-    },
-    [activeQuestionIndex]
-  );
+  const handleUserAnswer = useCallback(function handleUserAnswer(answer) {
+    setUserAnswer((prevUserAnswers) => {
+      return [...prevUserAnswers, answer];
+    });
+  }, []);
 
   /**
    * 1) Here, I wrap handleUserAnswer function with useCallback() hook in order for it to not change the function when the component re-renders.
@@ -71,12 +50,13 @@ export default function Quiz() {
     <div id="quiz">
       <Question
         key={activeQuestionIndex}
-        questionText={QUESTIONS[activeQuestionIndex].text}
-        answers={QUESTIONS[activeQuestionIndex].answers}
-        selectedAnswer={userAnswer[userAnswer.length - 1]}
+        questionIndex={activeQuestionIndex}
+        // questionText={QUESTIONS[activeQuestionIndex].text}
+        // answers={QUESTIONS[activeQuestionIndex].answers}
+        // selectedAnswer={userAnswer[userAnswer.length - 1]}
         onSelectAnswer={handleUserAnswer}
         onSkipAnswer={handleSkipAnswer}
-        answerState={answerState}
+        // answerState={answerState}
       />
     </div>
   );
